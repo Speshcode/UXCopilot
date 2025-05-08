@@ -1,5 +1,3 @@
-
-# uxcopilot.py
 import random
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -11,6 +9,7 @@ class UXCopilot:
         self.customer_data = customer_data
         self.personas = []
         self.journey_maps = {}
+        self.test_results = {}
 
     def build_personas(self) -> List[Dict]:
         segments = self.customer_data.groupby('segment')
@@ -40,10 +39,10 @@ class UXCopilot:
         self.journey_maps[persona['name']] = journey
         return journey
 
-    def simulate_research(self, method: str = 'qualitative') -> Dict:
+    def simulate_research(self, method: str = 'qualitative', interview_limit=5) -> Dict:
         if method == 'qualitative':
             return {
-                'interviews': random.choices(self.customer_data['pain_points'], k=5),
+                'interviews': random.choices(self.customer_data['pain_points'], k=interview_limit),
                 'themes': ['Usability', 'Speed', 'Content']
             }
         else:
@@ -56,7 +55,7 @@ class UXCopilot:
             }
 
     def test_interface_hypotheses(self, hypotheses: List[str]) -> Dict:
-        return {
+        self.test_results = {
             hypo: {
                 'confidence': round(random.uniform(0.7, 0.99), 2),
                 'impact': random.choice(['High', 'Medium', 'Low']),
@@ -64,6 +63,7 @@ class UXCopilot:
             }
             for hypo in hypotheses
         }
+        return self.test_results
 
     def visualize_age_distribution(self):
         plt.figure()
@@ -74,7 +74,7 @@ class UXCopilot:
         plt.savefig("output/age_distribution.png")
         plt.close()
 
-    def generate_pdf_report(self, filename="output/ux_report.pdf"):
+    def generate_pdf_report(self, filename="output/ux_report.pdf", selected_personas=None, tested_hypotheses=None):
         pdf = FPDF()
         pdf.set_auto_page_break(auto=True, margin=15)
         pdf.add_page()
@@ -86,7 +86,7 @@ class UXCopilot:
         pdf.set_font("Arial", style='B', size=12)
         pdf.cell(200, 10, txt="Personas:", ln=True)
         pdf.set_font("Arial", size=11)
-        for p in self.personas:
+        for p in (selected_personas or self.personas):
             pdf.cell(0, 10, f"- {p['name']} (Segment: {p['segment']}, Age: {p['age_range'][0]}-{p['age_range'][1]})", ln=True)
 
         pdf.ln(5)
@@ -94,15 +94,19 @@ class UXCopilot:
         pdf.image("output/age_distribution.png", w=180)
         pdf.ln(10)
 
+        if tested_hypotheses and self.test_results:
+            pdf.set_font("Arial", style='B', size=12)
+            pdf.cell(200, 10, txt="Tested Hypotheses:", ln=True)
+            pdf.set_font("Arial", size=11)
+            for h in tested_hypotheses:
+                result = self.test_results.get(h, {})
+                pdf.multi_cell(0, 10, f"{h} — Confidence: {result.get('confidence', '-')}, Impact: {result.get('impact', '-')}, Recommendation: {result.get('recommendation', '-')}")
+            pdf.ln(5)
+
         pdf.set_font("Arial", style='B', size=12)
-        pdf.cell(200, 10, txt="Recommendations:", ln=True)
+        pdf.cell(200, 10, txt="General Recommendations:", ln=True)
         pdf.set_font("Arial", size=11)
-        recommendations = [
-            "Improve usability based on feedback.",
-            "Focus on high-impact hypotheses.",
-            "Streamline the onboarding process.",
-        ]
-        for r in recommendations:
+        for r in ["Улучшить удобство интерфейса", "Оптимизировать критические точки пути", "Сфокусироваться на гипотезах с высоким потенциалом"]:
             pdf.cell(0, 10, f"- {r}", ln=True)
 
         pdf.output(filename)
