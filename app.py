@@ -4,7 +4,7 @@ from uxcopilot import UXCopilot
 
 st.set_page_config(page_title="UX Copilot Dashboard", layout="wide")
 st.title("🧠 UX Copilot")
-st.markdown("Интерактивный UX-дизайн ассистент для анализа пользовательского опыта.")
+st.markdown("Интерактивный UX-агент для анализа пользовательского опыта.")
 
 uploaded_file = st.file_uploader("📤 Загрузите данные пользователей (CSV)", type=["csv"])
 if uploaded_file:
