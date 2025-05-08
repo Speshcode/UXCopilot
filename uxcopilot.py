@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from fpdf import FPDF
 from typing import List, Dict
+import os
 
 class UXCopilot:
     def __init__(self, customer_data: pd.DataFrame):
@@ -30,8 +31,8 @@ class UXCopilot:
         stages = ['Awareness', 'Consideration', 'Purchase', 'Retention', 'Advocacy']
         journey = {
             stage: {
-                'goals': [f'Goal {i+1}' for i in range(2)],
-                'touchpoints': [f'Touchpoint {i+1}' for i in range(2)],
+                'goals': [f'Цель {i+1}' for i in range(2)],
+                'touchpoints': [f'Точка контакта {i+1}' for i in range(2)],
                 'pain_points': persona['pain_points']
             }
             for stage in stages
@@ -43,7 +44,7 @@ class UXCopilot:
         if method == 'qualitative':
             return {
                 'interviews': random.choices(self.customer_data['pain_points'], k=interview_limit),
-                'themes': ['Usability', 'Speed', 'Content']
+                'themes': ['Удобство', 'Скорость', 'Контент']
             }
         else:
             return {
@@ -58,8 +59,8 @@ class UXCopilot:
         self.test_results = {
             hypo: {
                 'confidence': round(random.uniform(0.7, 0.99), 2),
-                'impact': random.choice(['High', 'Medium', 'Low']),
-                'recommendation': random.choice(['Implement', 'Refine', 'Discard'])
+                'impact': random.choice(['Высокий', 'Средний', 'Низкий']),
+                'recommendation': random.choice(['Реализовать', 'Уточнить', 'Отклонить'])
             }
             for hypo in hypotheses
         }
@@ -68,26 +69,28 @@ class UXCopilot:
     def visualize_age_distribution(self):
         plt.figure()
         self.customer_data['age'].hist(bins=10)
-        plt.title("Age Distribution")
-        plt.xlabel("Age")
-        plt.ylabel("Number of Customers")
+        plt.title("Распределение по возрасту")
+        plt.xlabel("Возраст")
+        plt.ylabel("Количество клиентов")
+        os.makedirs("output", exist_ok=True)
         plt.savefig("output/age_distribution.png")
         plt.close()
 
     def generate_pdf_report(self, filename="output/ux_report.pdf", selected_personas=None, tested_hypotheses=None):
         pdf = FPDF()
+        pdf.add_font("DejaVu", "", "DejaVuSans.ttf", uni=True)
         pdf.set_auto_page_break(auto=True, margin=15)
         pdf.add_page()
-        pdf.set_font("Arial", size=12)
+        pdf.set_font("DejaVu", size=12)
 
-        pdf.cell(200, 10, txt="UX Research Report", ln=True, align="C")
+        pdf.cell(200, 10, txt="UX Отчёт по исследованию", ln=True, align="C")
         pdf.ln(10)
 
-        pdf.set_font("Arial", style='B', size=12)
-        pdf.cell(200, 10, txt="Personas:", ln=True)
-        pdf.set_font("Arial", size=11)
+        pdf.set_font("DejaVu", style='B', size=12)
+        pdf.cell(200, 10, txt="Персоны:", ln=True)
+        pdf.set_font("DejaVu", size=11)
         for p in (selected_personas or self.personas):
-            pdf.cell(0, 10, f"- {p['name']} (Segment: {p['segment']}, Age: {p['age_range'][0]}-{p['age_range'][1]})", ln=True)
+            pdf.cell(0, 10, f"- {p['name']} (Сегмент: {p['segment']}, Возраст: {p['age_range'][0]}–{p['age_range'][1]})", ln=True)
 
         pdf.ln(5)
         self.visualize_age_distribution()
@@ -95,18 +98,18 @@ class UXCopilot:
         pdf.ln(10)
 
         if tested_hypotheses and self.test_results:
-            pdf.set_font("Arial", style='B', size=12)
-            pdf.cell(200, 10, txt="Tested Hypotheses:", ln=True)
-            pdf.set_font("Arial", size=11)
+            pdf.set_font("DejaVu", style='B', size=12)
+            pdf.cell(200, 10, txt="Протестированные гипотезы:", ln=True)
+            pdf.set_font("DejaVu", size=11)
             for h in tested_hypotheses:
                 result = self.test_results.get(h, {})
-                pdf.multi_cell(0, 10, f"{h} — Confidence: {result.get('confidence', '-')}, Impact: {result.get('impact', '-')}, Recommendation: {result.get('recommendation', '-')}")
+                pdf.multi_cell(0, 10, f"{h} — Уверенность: {result.get('confidence', '-')}, Влияние: {result.get('impact', '-')}, Рекомендация: {result.get('recommendation', '-')}")
             pdf.ln(5)
 
-        pdf.set_font("Arial", style='B', size=12)
-        pdf.cell(200, 10, txt="General Recommendations:", ln=True)
-        pdf.set_font("Arial", size=11)
-        for r in ["Улучшить удобство интерфейса", "Оптимизировать критические точки пути", "Сфокусироваться на гипотезах с высоким потенциалом"]:
+        pdf.set_font("DejaVu", style='B', size=12)
+        pdf.cell(200, 10, txt="Общие рекомендации:", ln=True)
+        pdf.set_font("DejaVu", size=11)
+        for r in ["Упростить навигацию", "Оптимизировать ключевые экраны", "Сосредоточиться на приоритетных гипотезах"]:
             pdf.cell(0, 10, f"- {r}", ln=True)
 
         pdf.output(filename)
