@@ -86,7 +86,7 @@ class UXCopilot:
         pdf.cell(200, 10, txt="UX Отчёт по исследованию", ln=True, align="C")
         pdf.ln(10)
 
-        pdf.set_font("DejaVu", style='B', size=12)
+        pdf.set_font("DejaVu", size=12)
         pdf.cell(200, 10, txt="Персоны:", ln=True)
         pdf.set_font("DejaVu", size=11)
         for p in (selected_personas or self.personas):
@@ -98,7 +98,7 @@ class UXCopilot:
         pdf.ln(10)
 
         if tested_hypotheses and self.test_results:
-            pdf.set_font("DejaVu", style='B', size=12)
+            pdf.set_font("DejaVu", size=12)
             pdf.cell(200, 10, txt="Протестированные гипотезы:", ln=True)
             pdf.set_font("DejaVu", size=11)
             for h in tested_hypotheses:
@@ -106,7 +106,7 @@ class UXCopilot:
                 pdf.multi_cell(0, 10, f"{h} — Уверенность: {result.get('confidence', '-')}, Влияние: {result.get('impact', '-')}, Рекомендация: {result.get('recommendation', '-')}")
             pdf.ln(5)
 
-        pdf.set_font("DejaVu", style='B', size=12)
+        pdf.set_font("DejaVu", size=12)
         pdf.cell(200, 10, txt="Общие рекомендации:", ln=True)
         pdf.set_font("DejaVu", size=11)
         for r in ["Упростить навигацию", "Оптимизировать ключевые экраны", "Сосредоточиться на приоритетных гипотезах"]:
