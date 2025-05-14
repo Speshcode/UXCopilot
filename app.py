@@ -39,11 +39,31 @@ if uploaded_file:
                 st.write(f"📞 Точки контакта: {', '.join(data['touchpoints'])}")
                 st.write(f"⚠️ Боли: {', '.join(data['pain_points'])}")
 
-        st.header("🧪 Симуляция исследований")
-        qualitative = ux.simulate_research("qualitative")
-        qualitative['interviews'] = qualitative['interviews'][:qualitative_count]
-        st.write("**Качественные:**", qualitative)
-        st.write("**Количественные:**", ux.simulate_research("quantitative"))
+       st.header("🧪 Симуляция исследований")
+
+        # Качественные
+        st.subheader("Качественные")
+        qualitative = ux.simulate_research("qualitative", interview_limit=qualitative_count)
+        
+        st.markdown("**Выделенные темы:**")
+        st.markdown(", ".join(f"`{t}`" for t in qualitative["themes"]))
+        
+        st.markdown("**Интервью (выдержки):**")
+        for i, pain in enumerate(qualitative["interviews"], 1):
+            st.markdown(f"{i}. {pain}")
+        
+        # Количественные
+        st.subheader("Количественные")
+        quantitative = ux.simulate_research("quantitative")
+        satisfaction = quantitative["survey_results"]["satisfaction"]
+        nps = quantitative["survey_results"]["nps"]
+        sample = quantitative["sample_size"]
+        
+        col1, col2, col3 = st.columns(3)
+        col1.metric("🟢 CSI (Satisfaction)", f"{satisfaction:.2f}", delta=None)
+        col2.metric("📊 NPS", nps)
+        col3.metric("👥 Кол-во респондентов", sample)
+
 
         st.header("🧪 Тестирование гипотез")
         test_results = ux.test_interface_hypotheses(hypotheses)
