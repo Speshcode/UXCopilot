@@ -4,7 +4,7 @@ from uxcopilot import UXCopilot
 
 st.set_page_config(page_title="UX Copilot Dashboard", layout="wide")
 st.title("🧠 UX Copilot")
-st.markdown("Интерактивный UX-агент для анализа пользовательского опыта.")
+st.markdown("Интерактивный UX-дизайн ассистент для анализа пользовательского опыта.")
 
 uploaded_file = st.file_uploader("📤 Загрузите данные пользователей (CSV)", type=["csv"])
 if uploaded_file:
@@ -39,31 +39,28 @@ if uploaded_file:
                 st.write(f"📞 Точки контакта: {', '.join(data['touchpoints'])}")
                 st.write(f"⚠️ Боли: {', '.join(data['pain_points'])}")
 
-       st.header("🧪 Симуляция исследований")
+        st.header("🧪 Симуляция исследований")
 
         # Качественные
         st.subheader("Качественные")
         qualitative = ux.simulate_research("qualitative", interview_limit=qualitative_count)
-        
         st.markdown("**Выделенные темы:**")
         st.markdown(", ".join(f"`{t}`" for t in qualitative["themes"]))
-        
         st.markdown("**Интервью (выдержки):**")
         for i, pain in enumerate(qualitative["interviews"], 1):
             st.markdown(f"{i}. {pain}")
-        
+
         # Количественные
         st.subheader("Количественные")
         quantitative = ux.simulate_research("quantitative")
         satisfaction = quantitative["survey_results"]["satisfaction"]
         nps = quantitative["survey_results"]["nps"]
         sample = quantitative["sample_size"]
-        
+
         col1, col2, col3 = st.columns(3)
-        col1.metric("🟢 CSI (Satisfaction)", f"{satisfaction:.2f}", delta=None)
+        col1.metric("🟢 CSI (Satisfaction)", f"{satisfaction:.2f}")
         col2.metric("📊 NPS", nps)
         col3.metric("👥 Кол-во респондентов", sample)
-
 
         st.header("🧪 Тестирование гипотез")
         test_results = ux.test_interface_hypotheses(hypotheses)
@@ -71,7 +68,7 @@ if uploaded_file:
             st.markdown(f"**{h}** — 💡 Confidence: {res['confidence']}, 💥 Impact: {res['impact']}, 🧭 Рекомендация: {res['recommendation']}")
 
         st.header("📄 Отчёт в PDF")
-        ux.generate_pdf_report("output/ux_report.pdf")
+        ux.generate_pdf_report("output/ux_report.pdf", selected_personas=personas, tested_hypotheses=hypotheses)
         with open("output/ux_report.pdf", "rb") as file:
             st.download_button("📥 Скачать PDF", file, file_name="UX_Report.pdf", mime="application/pdf")
 
