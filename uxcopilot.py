@@ -28,9 +28,16 @@ class UXCopilot:
 
     def build_customer_journey_map(self, persona_index: int) -> Dict:
         persona = self.personas[persona_index]
-        stages = ['Awareness', 'Consideration', 'Purchase', 'Retention', 'Advocacy']
+        stage_names = {
+            'Awareness': 'Осведомлённость',
+            'Consideration': 'Рассмотрение',
+            'Purchase': 'Покупка',
+            'Retention': 'Удержание',
+            'Advocacy': 'Адвокация'
+        }
+        stages = stage_names.keys()
         journey = {
-            stage: {
+            stage_names[stage]: {
                 'goals': [f'Цель {i+1}' for i in range(2)],
                 'touchpoints': [f'Точка контакта {i+1}' for i in range(2)],
                 'pain_points': persona['pain_points']
@@ -39,6 +46,24 @@ class UXCopilot:
         }
         self.journey_maps[persona['name']] = journey
         return journey
+
+    def draw_cjm_timeline(self, persona_name: str, cjm: Dict) -> str:
+        stages = list(cjm.keys())
+        fig, ax = plt.subplots(figsize=(12, 2))
+        ax.set_xlim(0, len(stages))
+        ax.set_ylim(0, 1)
+        ax.axis('off')
+
+        for i, stage in enumerate(stages):
+            ax.add_patch(plt.Rectangle((i, 0), 1, 1, edgecolor='black', facecolor='#DCEEFF'))
+            ax.text(i + 0.5, 0.5, stage, va='center', ha='center', fontsize=9, fontweight='bold')
+
+        plt.title(f"Карта пути клиента: {persona_name}", fontsize=12)
+        os.makedirs("output", exist_ok=True)
+        output_path = f"output/cjm_timeline_{persona_name.replace(' ', '_')}.png"
+        plt.savefig(output_path, bbox_inches='tight')
+        plt.close()
+        return output_path
 
     def simulate_research(self, method: str = 'qualitative', interview_limit=5) -> Dict:
         if method == 'qualitative':
@@ -96,6 +121,16 @@ class UXCopilot:
         self.visualize_age_distribution()
         pdf.image("output/age_distribution.png", w=180)
         pdf.ln(10)
+
+        # CJM timeline
+        pdf.set_font("DejaVu", size=12)
+        pdf.cell(200, 10, txt="Карта пути клиента (Customer Journey Map):", ln=True)
+        for persona in (selected_personas or self.personas):
+            name = persona["name"]
+            cjm = self.journey_maps.get(name, {})
+            img_path = self.draw_cjm_timeline(name, cjm)
+            pdf.image(img_path, w=180)
+            pdf.ln(5)
 
         if tested_hypotheses and self.test_results:
             pdf.set_font("DejaVu", size=12)
