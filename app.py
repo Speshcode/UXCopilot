@@ -35,7 +35,7 @@ if task == "Построить CJM":
     idx = st.selectbox("Выберите персону", list(range(len(personas))), format_func=lambda i: personas[i]['name'])
     cjm = ux.build_customer_journey_map(idx)
     img_path = ux.draw_cjm_timeline(personas[idx]["name"], cjm)
-    st.image(img_path, caption=f"CJM: {personas[idx]['name']}", use_column_width=True)
+    st.image(img_path, caption=f"CJM: {personas[idx]['name']}", use_container_width=True)
 
     if st.button("📄 Сформировать PDF"):
         ux.generate_pdf_report("output/ux_report.pdf", selected_personas=[personas[idx]])
@@ -60,7 +60,7 @@ elif task == "Тест First Click (тепловая карта)":
     image_file = st.file_uploader("Загрузите макет (PNG/JPG)", type=["png", "jpg", "jpeg"])
     if image_file:
         img = Image.open(image_file)
-        st.image(img, use_column_width=True)
+        st.image(img, use_container_width=True)
         st.info("Симуляция кликов (в будущем — реальные клики)")
         w, h = img.size
         n = st.slider("Сколько кликов сгенерировать", 10, 100, 40)
