@@ -71,7 +71,8 @@ elif st.session_state["screen"] == "hypo":
             st.markdown(f"**{h}** — Confidence: `{res['confidence']}`, Impact: `{res['impact']}`, Рекомендация: `{res['recommendation']}`")
 
 elif st.session_state["screen"] == "click":
-    run_first_click_test()
+    import attention_ai_module
+    attention_ai_module.run_attention_map()
 
 elif st.session_state["screen"] == "interview":
     st.header("🎙️ Глубинное интервью")
