@@ -1,11 +1,14 @@
 import streamlit as st
 import pandas as pd
 from uxcopilot import UXCopilot
+import numpy as np
+import matplotlib.pyplot as plt
+from PIL import Image
+import os
 
 st.set_page_config(page_title="UX Copilot", layout="wide")
 st.title("🧠 UX Copilot")
 
-# Загружаем данные
 uploaded_file = st.file_uploader("📤 Загрузите CSV с клиентами", type=["csv"])
 if uploaded_file:
     df = pd.read_csv(uploaded_file)
@@ -20,29 +23,49 @@ else:
     })
 
 ux = UXCopilot(df)
+quant = ux.simulate_research("quantitative")
 
-# Показываем метрики CSI и NPS
-quantitative = ux.simulate_research("quantitative")
+st.columns([1, 1])
 col1, col2 = st.columns(2)
-col1.metric("🟢 CSI", quantitative["survey_results"]["satisfaction"])
-col2.metric("📈 NPS", quantitative["survey_results"]["nps"])
+col1.metric("🟢 CSI", quant["survey_results"]["satisfaction"])
+col2.metric("📈 NPS", quant["survey_results"]["nps"])
 
-st.markdown("## 🔧 Выберите действие")
+st.markdown("## 🧩 Выберите действие")
 
-# Кнопки на главной
+# Стили плиток
+tile_css = """
+<style>
+.tile-button {
+    display: block;
+    width: 100%;
+    padding: 1.2em;
+    margin-bottom: 1em;
+    text-align: center;
+    border: 2px solid #EEE;
+    border-radius: 12px;
+    background-color: #f9f9f9;
+    font-size: 1.1rem;
+    transition: all 0.2s ease-in-out;
+}
+.tile-button:hover {
+    background-color: #e0f0ff;
+    border-color: #4098ff;
+}
+</style>
+"""
+st.markdown(tile_css, unsafe_allow_html=True)
+
+# Рендер плиток
 col1, col2, col3 = st.columns(3)
-with col1:
-    cjmbtn = st.button("📍 Построить CJM")
-with col2:
-    hypobtn = st.button("💡 Проверить гипотезы")
-with col3:
-    clickbtn = st.button("🔥 First Click")
 
-col4, col5 = st.columns(2)
-with col4:
-    interviewbtn = st.button("🎤 Глубинное интервью")
-with col5:
-    metricbtn = st.button("📊 Только метрики")
+with col1:
+    cjmbtn = st.button("📍 Построить CJM", key="tile1")
+    interviewbtn = st.button("🎤 Глубинное интервью", key="tile2")
+with col2:
+    hypobtn = st.button("💡 Проверить гипотезы", key="tile3")
+    metricbtn = st.button("📊 Только метрики", key="tile4")
+with col3:
+    clickbtn = st.button("🔥 First Click", key="tile5")
 
 # Обработка сценариев
 if cjmbtn:
@@ -66,11 +89,6 @@ elif hypobtn:
             st.markdown(f"**{h}** — Confidence: `{res['confidence']}`, Impact: `{res['impact']}`, Рекомендация: `{res['recommendation']}`")
 
 elif clickbtn:
-    import numpy as np
-    import matplotlib.pyplot as plt
-    from PIL import Image
-    import os
-
     st.header("🖱️ First Click Test")
     image_file = st.file_uploader("Загрузите макет (PNG/JPG)", type=["png", "jpg", "jpeg"])
     if image_file:
@@ -106,6 +124,6 @@ elif interviewbtn:
 
 elif metricbtn:
     st.header("📊 Замеры")
-    st.metric("🟢 CSI", quantitative["survey_results"]["satisfaction"])
-    st.metric("📈 NPS", quantitative["survey_results"]["nps"])
-    st.metric("👥 Кол-во респондентов", quantitative["sample_size"])
+    st.metric("🟢 CSI", quant["survey_results"]["satisfaction"])
+    st.metric("📈 NPS", quant["survey_results"]["nps"])
+    st.metric("👥 Кол-во респондентов", quant["sample_size"])
