@@ -106,29 +106,8 @@ elif st.session_state["screen"] == "hypo":
             st.markdown(f"**{h}** — Confidence: `{res['confidence']}`, Impact: `{res['impact']}`, Рекомендация: `{res['recommendation']}`")
 
 elif st.session_state["screen"] == "click":
-    st.header("🖱️ First Click Test")
-    image_file = st.file_uploader("Загрузите макет (PNG/JPG)", type=["png", "jpg", "jpeg"])
-    if image_file:
-        img = Image.open(image_file)
-        st.image(img, use_container_width=True)
-        st.info("Симуляция кликов")
-        w, h = img.size
-        n = st.slider("Сколько кликов сгенерировать", 10, 100, 40)
-        x, y = np.random.randint(0, w, n), np.random.randint(0, h, n)
-        fig, ax = plt.subplots()
-        ax.imshow(img)
-        ax.imshow(np.histogram2d(x, y, bins=[w//10, h//10])[0].T, cmap="hot", alpha=0.5, extent=(0, w, h, 0))
-        ax.set_title("🔥 Тепловая карта")
-        ax.axis('off')
-        path = "output/first_click_heatmap.png"
-        os.makedirs("output", exist_ok=True)
-        plt.savefig(path)
-        st.image(path)
-        col1, col2 = st.columns(2)
-        col1.metric("🟢 CSI", round(np.random.uniform(3.5, 5), 2))
-        col2.metric("🧪 UMUX", round(np.random.uniform(65, 95), 1))
-        with open(path, "rb") as f:
-            st.download_button("📥 Скачать карту", f, file_name="heatmap.png", mime="image/png")
+    from first_click_attention import run_first_click_test
+    run_first_click_test()
 
 elif st.session_state["screen"] == "interview":
     st.header("🎙️ Глубинное интервью")
