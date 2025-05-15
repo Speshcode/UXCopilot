@@ -1,15 +1,15 @@
+
 import streamlit as st
 import pandas as pd
 from uxcopilot import UXCopilot
 import numpy as np
-import matplotlib.pyplot as plt
-from PIL import Image
 import os
+
+from first_click_attention import run_first_click_test
 
 st.set_page_config(page_title="UX Copilot", layout="wide")
 st.title("🧠 UX Copilot")
 
-# Инициализация session_state для управления экранами
 if "screen" not in st.session_state:
     st.session_state["screen"] = None
 
@@ -33,40 +33,6 @@ col1, col2 = st.columns(2)
 col1.metric("🟢 Удовлетворённость (CSI)", quant["survey_results"]["satisfaction"], f"на {pd.Timestamp.today().strftime('%d.%m.%Y')}")
 col2.metric("📈 Лояльность (NPS)", quant["survey_results"]["nps"], f"на {pd.Timestamp.today().strftime('%d.%m.%Y')}")
 
-st.markdown("""
-<style>
-.tile-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 24px;
-    margin-top: 30px;
-}
-.tile {
-    flex: 1 1 calc(30% - 24px);
-    min-width: 220px;
-    max-width: 100%;
-    background-color: #f9f9f9;
-    border: 2px solid #ddd;
-    border-radius: 16px;
-    padding: 24px;
-    height: 120px;
-    box-sizing: border-box;
-    cursor: pointer;
-    transition: 0.2s ease-in-out;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: flex-start;
-    font-size: 18px;
-    font-weight: 500;
-}
-.tile:hover {
-    background-color: #eef5ff;
-    border-color: #4098ff;
-}
-</style>
-""", unsafe_allow_html=True)
-
 st.markdown("## 🧩 Выберите действие")
 
 col1, col2, col3 = st.columns(3)
@@ -84,7 +50,6 @@ with col3:
     if st.button("🔥 First Click"):
         st.session_state["screen"] = "click"
 
-# Логика экранов
 if st.session_state["screen"] == "cjm":
     st.header("🗺️ Customer Journey Map")
     personas = ux.build_personas()
@@ -106,7 +71,6 @@ elif st.session_state["screen"] == "hypo":
             st.markdown(f"**{h}** — Confidence: `{res['confidence']}`, Impact: `{res['impact']}`, Рекомендация: `{res['recommendation']}`")
 
 elif st.session_state["screen"] == "click":
-    from first_click_attention import run_first_click_test
     run_first_click_test()
 
 elif st.session_state["screen"] == "interview":
@@ -120,6 +84,6 @@ elif st.session_state["screen"] == "interview":
 
 elif st.session_state["screen"] == "metrics":
     st.header("📊 Замеры")
-    st.metric("🟢 CSI", quant["survey_results"]["satisfaction"])
-    st.metric("📈 NPS", quant["survey_results"]["nps"])
+    st.metric("🟢 Удовлетворённость (CSI)", quant["survey_results"]["satisfaction"])
+    st.metric("📈 Лояльность (NPS)", quant["survey_results"]["nps"])
     st.metric("👥 Кол-во респондентов", quant["sample_size"])
