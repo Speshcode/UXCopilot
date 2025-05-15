@@ -5,16 +5,8 @@ from uxcopilot import UXCopilot
 st.set_page_config(page_title="UX Copilot", layout="wide")
 st.title("🧠 UX Copilot")
 
-st.sidebar.header("🔧 Выберите, что вы хотите сделать:")
-task = st.sidebar.radio("", [
-    "Построить CJM",
-    "Проверить гипотезы",
-    "Тест First Click (тепловая карта)",
-    "Глубинное интервью",
-    "Замер NPS и CSI"
-])
-
-uploaded_file = st.sidebar.file_uploader("📤 Загрузите CSV с клиентами", type=["csv"])
+# Загружаем данные
+uploaded_file = st.file_uploader("📤 Загрузите CSV с клиентами", type=["csv"])
 if uploaded_file:
     df = pd.read_csv(uploaded_file)
 else:
@@ -29,20 +21,43 @@ else:
 
 ux = UXCopilot(df)
 
-if task == "Построить CJM":
+# Показываем метрики CSI и NPS
+quantitative = ux.simulate_research("quantitative")
+col1, col2 = st.columns(2)
+col1.metric("🟢 CSI", quantitative["survey_results"]["satisfaction"])
+col2.metric("📈 NPS", quantitative["survey_results"]["nps"])
+
+st.markdown("## 🔧 Выберите действие")
+
+# Кнопки на главной
+col1, col2, col3 = st.columns(3)
+with col1:
+    cjmbtn = st.button("📍 Построить CJM")
+with col2:
+    hypobtn = st.button("💡 Проверить гипотезы")
+with col3:
+    clickbtn = st.button("🔥 First Click")
+
+col4, col5 = st.columns(2)
+with col4:
+    interviewbtn = st.button("🎤 Глубинное интервью")
+with col5:
+    metricbtn = st.button("📊 Только метрики")
+
+# Обработка сценариев
+if cjmbtn:
     st.header("🗺️ Customer Journey Map")
     personas = ux.build_personas()
     idx = st.selectbox("Выберите персону", list(range(len(personas))), format_func=lambda i: personas[i]['name'])
     cjm = ux.build_customer_journey_map(idx)
     img_path = ux.draw_cjm_timeline(personas[idx]["name"], cjm)
     st.image(img_path, caption=f"CJM: {personas[idx]['name']}", use_container_width=True)
-
     if st.button("📄 Сформировать PDF"):
         ux.generate_pdf_report("output/ux_report.pdf", selected_personas=[personas[idx]])
         with open("output/ux_report.pdf", "rb") as f:
             st.download_button("📥 Скачать PDF", f, file_name="UX_Report.pdf", mime="application/pdf")
 
-elif task == "Проверить гипотезы":
+elif hypobtn:
     st.header("💡 Проверка гипотез")
     hypotheses = st.text_area("Введите гипотезы (по одной на строку):", "Изменить CTA\nСократить шаги\nДобавить обучение").splitlines()
     if st.button("Проверить гипотезы"):
@@ -50,7 +65,7 @@ elif task == "Проверить гипотезы":
         for h, res in results.items():
             st.markdown(f"**{h}** — Confidence: `{res['confidence']}`, Impact: `{res['impact']}`, Рекомендация: `{res['recommendation']}`")
 
-elif task == "Тест First Click (тепловая карта)":
+elif clickbtn:
     import numpy as np
     import matplotlib.pyplot as plt
     from PIL import Image
@@ -61,7 +76,7 @@ elif task == "Тест First Click (тепловая карта)":
     if image_file:
         img = Image.open(image_file)
         st.image(img, use_container_width=True)
-        st.info("Симуляция кликов (в будущем — реальные клики)")
+        st.info("Симуляция кликов")
         w, h = img.size
         n = st.slider("Сколько кликов сгенерировать", 10, 100, 40)
         x, y = np.random.randint(0, w, n), np.random.randint(0, h, n)
@@ -79,10 +94,8 @@ elif task == "Тест First Click (тепловая карта)":
         col2.metric("🧪 UMUX", round(np.random.uniform(65, 95), 1))
         with open(path, "rb") as f:
             st.download_button("📥 Скачать карту", f, file_name="heatmap.png", mime="image/png")
-    else:
-        st.info("Загрузите изображение для теста.")
 
-elif task == "Глубинное интервью":
+elif interviewbtn:
     st.header("🎙️ Глубинное интервью")
     qualitative = ux.simulate_research("qualitative", interview_limit=5)
     st.subheader("🧩 Основные темы:")
@@ -91,9 +104,8 @@ elif task == "Глубинное интервью":
     for i, pain in enumerate(qualitative["interviews"], 1):
         st.markdown(f"{i}. {pain}")
 
-elif task == "Замер NPS и CSI":
+elif metricbtn:
     st.header("📊 Замеры")
-    quantitative = ux.simulate_research("quantitative")
     st.metric("🟢 CSI", quantitative["survey_results"]["satisfaction"])
     st.metric("📈 NPS", quantitative["survey_results"]["nps"])
     st.metric("👥 Кол-во респондентов", quantitative["sample_size"])
