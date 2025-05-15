@@ -9,7 +9,10 @@ import os
 st.set_page_config(page_title="UX Copilot", layout="wide")
 st.title("🧠 UX Copilot")
 
-# Метрика данных
+# Инициализация session_state для управления экранами
+if "screen" not in st.session_state:
+    st.session_state["screen"] = None
+
 uploaded_file = st.file_uploader("📤 Загрузите CSV с клиентами", type=["csv"])
 if uploaded_file:
     df = pd.read_csv(uploaded_file)
@@ -30,7 +33,6 @@ col1, col2 = st.columns(2)
 col1.metric("🟢 CSI", quant["survey_results"]["satisfaction"])
 col2.metric("📈 NPS", quant["survey_results"]["nps"])
 
-# CSS
 st.markdown("""
 <style>
 .tile-grid {
@@ -65,21 +67,25 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# HTML кнопки
-st.markdown("""
-<div class="tile-grid">
-    <form action="?cjmbtn=true"><button class="tile">📍 Построить CJM</button></form>
-    <form action="?hypobtn=true"><button class="tile">💡 Проверить гипотезы</button></form>
-    <form action="?clickbtn=true"><button class="tile">🔥 First Click</button></form>
-    <form action="?interviewbtn=true"><button class="tile">🎤 Глубинное интервью</button></form>
-    <form action="?metricbtn=true"><button class="tile">📊 Только метрики</button></form>
-</div>
-""", unsafe_allow_html=True)
+st.markdown("## 🧩 Выберите действие")
 
-# Обработка query
-q = st.query_params
+col1, col2, col3 = st.columns(3)
+with col1:
+    if st.button("📍 Построить CJM"):
+        st.session_state["screen"] = "cjm"
+    if st.button("🎤 Глубинное интервью"):
+        st.session_state["screen"] = "interview"
+with col2:
+    if st.button("💡 Проверить гипотезы"):
+        st.session_state["screen"] = "hypo"
+    if st.button("📊 Только метрики"):
+        st.session_state["screen"] = "metrics"
+with col3:
+    if st.button("🔥 First Click"):
+        st.session_state["screen"] = "click"
 
-if "cjmbtn" in q:
+# Логика экранов
+if st.session_state["screen"] == "cjm":
     st.header("🗺️ Customer Journey Map")
     personas = ux.build_personas()
     idx = st.selectbox("Выберите персону", list(range(len(personas))), format_func=lambda i: personas[i]['name'])
@@ -91,7 +97,7 @@ if "cjmbtn" in q:
         with open("output/ux_report.pdf", "rb") as f:
             st.download_button("📥 Скачать PDF", f, file_name="UX_Report.pdf", mime="application/pdf")
 
-elif "hypobtn" in q:
+elif st.session_state["screen"] == "hypo":
     st.header("💡 Проверка гипотез")
     hypotheses = st.text_area("Введите гипотезы (по одной на строку):", "Изменить CTA\nСократить шаги\nДобавить обучение").splitlines()
     if st.button("Проверить гипотезы"):
@@ -99,7 +105,7 @@ elif "hypobtn" in q:
         for h, res in results.items():
             st.markdown(f"**{h}** — Confidence: `{res['confidence']}`, Impact: `{res['impact']}`, Рекомендация: `{res['recommendation']}`")
 
-elif "clickbtn" in q:
+elif st.session_state["screen"] == "click":
     st.header("🖱️ First Click Test")
     image_file = st.file_uploader("Загрузите макет (PNG/JPG)", type=["png", "jpg", "jpeg"])
     if image_file:
@@ -124,7 +130,7 @@ elif "clickbtn" in q:
         with open(path, "rb") as f:
             st.download_button("📥 Скачать карту", f, file_name="heatmap.png", mime="image/png")
 
-elif "interviewbtn" in q:
+elif st.session_state["screen"] == "interview":
     st.header("🎙️ Глубинное интервью")
     qualitative = ux.simulate_research("qualitative", interview_limit=5)
     st.subheader("🧩 Основные темы:")
@@ -133,7 +139,7 @@ elif "interviewbtn" in q:
     for i, pain in enumerate(qualitative["interviews"], 1):
         st.markdown(f"{i}. {pain}")
 
-elif "metricbtn" in q:
+elif st.session_state["screen"] == "metrics":
     st.header("📊 Замеры")
     st.metric("🟢 CSI", quant["survey_results"]["satisfaction"])
     st.metric("📈 NPS", quant["survey_results"]["nps"])
