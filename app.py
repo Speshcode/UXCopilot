@@ -30,8 +30,8 @@ ux = UXCopilot(df)
 quant = ux.simulate_research("quantitative")
 
 col1, col2 = st.columns(2)
-col1.metric("🟢 CSI", quant["survey_results"]["satisfaction"], f"на {pd.Timestamp.today().strftime('%d.%m.%Y')}")
-col2.metric("📈 NPS", quant["survey_results"]["nps"], f"на {pd.Timestamp.today().strftime('%d.%m.%Y')}")
+col1.metric("🟢 Удовлетворённость (CSI)", quant["survey_results"]["satisfaction"], f"на {pd.Timestamp.today().strftime('%d.%m.%Y')}")
+col2.metric("📈 Лояльность (NPS)", quant["survey_results"]["nps"], f"на {pd.Timestamp.today().strftime('%d.%m.%Y')}")
 
 st.markdown("""
 <style>
@@ -93,7 +93,7 @@ if st.session_state["screen"] == "cjm":
     img_path = ux.draw_cjm_timeline(personas[idx]["name"], cjm)
     st.image(img_path, caption=f"CJM: {personas[idx]['name']}", use_container_width=True)
     if st.button("📄 Сформировать PDF"):
-        ux.generate_pdf_report("output/ux_report.pdf", selected_personas=[personas[idx]])
+        ux.generate_pdf_report("output/ux_report.pdf", selected_personas=[personas[idx]], date=pd.Timestamp.today().strftime('%d.%m.%Y'))
         with open("output/ux_report.pdf", "rb") as f:
             st.download_button("📥 Скачать PDF", f, file_name="UX_Report.pdf", mime="application/pdf")
 
