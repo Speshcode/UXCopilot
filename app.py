@@ -30,8 +30,8 @@ ux = UXCopilot(df)
 quant = ux.simulate_research("quantitative")
 
 col1, col2 = st.columns(2)
-col1.metric("🟢 CSI", quant["survey_results"]["satisfaction"])
-col2.metric("📈 NPS", quant["survey_results"]["nps"])
+col1.metric("🟢 CSI", quant["survey_results"]["satisfaction"], f"на {pd.Timestamp.today().strftime('%d.%m.%Y')}")
+col2.metric("📈 NPS", quant["survey_results"]["nps"], f"на {pd.Timestamp.today().strftime('%d.%m.%Y')}")
 
 st.markdown("""
 <style>
